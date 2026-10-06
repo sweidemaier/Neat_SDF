@@ -1,48 +1,47 @@
 !!python/object:argparse.Namespace
 input: !!python/object:argparse.Namespace
-  epsilon: 0.0001
+  epsilon: 0.001
   initial: true
   parameters: !!python/object:argparse.Namespace
     bs: 20000
-  point_path: pointclouds/3D_bunny
+  point_path: pointclouds/button
 models: !!python/object:argparse.Namespace
   decoder: !!python/object:argparse.Namespace
-    dim: 3
+    dim: 2
     hidden_size: 256
-    n_blocks: 8
+    n_blocks: 4
     out_dim: 1
     type: models.QuadNet
   decoder_pf: !!python/object:argparse.Namespace
-    dim: 3
-    hidden_size: 128
-    n_blocks: 6
+    dim: 2
+    hidden_size: 64
+    n_blocks: 4
     out_dim: 1
     type: models.resnet
 sampling: !!python/object:argparse.Namespace
   init_grid_res: 16
   type: sampling.adaptive_grid
-save_dir: logs/PF/3D_bunny_eps0.0001_1791283845
+save_dir: logs/PF/button_eps0.001_1791294431
 trainer: !!python/object:argparse.Namespace
   epochs: 30
   opt_pf: !!python/object:argparse.Namespace
     beta1: 0.9
     beta2: 0.999
-    lr: 5e-04
+    lr: 5e-05
     type: adam
     weight_decay: 0.0
   opt_sdf: !!python/object:argparse.Namespace
     beta1: 0.9
-    beta2: 0.98
-    lr: 5e-05
+    beta2: 0.998
+    lr: 9e-05
     type: adam
     weight_decay: 0.0
   seed: 100
   training_params: !!python/object:argparse.Namespace
-    grid_max_3d:
+    grid_max_2d:
     - 2.4
     - 2.4
-    - 2.4
-  type: trainers.pfSDF_3D
+  type: trainers.pfSDF_2D
 viz: !!python/object:argparse.Namespace
-  log_freq: 100
+  log_freq: 10
   save_freq: 1

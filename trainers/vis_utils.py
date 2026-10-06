@@ -92,3 +92,114 @@ def imf2mesh(imf, res=256, threshold=0.0, batch_size = 10000, verbose=True,
 
     return new_mesh
 
+
+def vis_sdf_and_pf(
+    net_sdf,
+    net_pf,
+    bounds=(-1.2, 1.2),
+    resolution=1024,
+    save_path="vis_sdf_pf.png",
+    pf_vis = False
+):
+    # Visualize 2D SDF with level set lines and phase-field 0.5-level set overlay.
+    import torch
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
+    from matplotlib.colors import TwoSlopeNorm
+
+    device = "cuda" if next(net_sdf.parameters()).is_cuda else "cpu"
+
+    # grid
+    x = np.linspace(bounds[0], bounds[1], resolution)
+    y = np.linspace(bounds[0], bounds[1], resolution)
+    X, Y = np.meshgrid(x, y, indexing="xy")
+
+    pts = torch.tensor(
+        np.stack([X.ravel(), Y.ravel()], axis=1),
+        dtype=torch.float32,
+        device=device,
+    )
+
+    # evaluate networks
+    with torch.no_grad():
+        sdf_val = net_sdf(pts).cpu().numpy().reshape(resolution, resolution)
+        pf_val = net_pf(pts).cpu().numpy().reshape(resolution, resolution)
+
+    color_neg = "#2C7BB6"
+    color_zero = "#3ED9A8"
+    color_pos = "#F1F7C8"
+
+    sdf_cmap = mcolors.LinearSegmentedColormap.from_list(
+        "blue_green_yellow",
+        [
+            (0.0, color_neg),
+            (0.5, color_zero),
+            (1.0, color_pos),
+        ],
+    )
+
+    norm = TwoSlopeNorm(
+        vmin=-0.2,
+        vcenter=0.0,
+        vmax=0.2,
+    )
+
+    vmax = np.ceil(np.max(np.abs(sdf_val)) * 10) / 10
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+
+    for spine in ax.spines.values():
+        spine.set_linewidth(1.5)
+        spine.set_alpha(0.75)
+
+    ax.imshow(
+        sdf_val,
+        extent=[x.min(), x.max(), y.min(), y.max()],
+        origin="lower",
+        cmap=sdf_cmap,
+        norm=norm,
+        interpolation="bicubic",
+        alpha=0.15,
+    )
+
+    # thin SDF isolines
+    ax.contour(
+        X,
+        Y,
+        sdf_val,
+        levels=np.arange(-vmax, vmax + 0.05, 0.05),
+        colors="black",
+        linewidths=0.4,
+        alpha=0.5,
+    )
+
+    # SDF zero level set
+    ax.contour(
+        X,
+        Y,
+        sdf_val,
+        levels=[0.0],
+        colors="#3ED9A8",
+        linewidths=2.0,
+    )
+
+    # phase field interface
+    if pf_vis == True:
+        ax.contour(
+            X,
+            Y,
+            pf_val,
+            levels=[0.25],
+            colors="#F73618",
+            linewidths=2.0,
+        )
+
+    ax.set_aspect("equal")
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+

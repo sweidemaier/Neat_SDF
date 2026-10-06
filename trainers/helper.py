@@ -208,9 +208,6 @@ def adaptive_refinement(
     Returns:
         tuple: (refined_midpoints, refined_levels)
     """
-    import numpy as np
-    import torch
-
     box_midpoints = torch.as_tensor(box_midpoints, dtype=torch.float32, device=device)
     refinement_lvl = torch.as_tensor(refinement_lvl, dtype=torch.long, device=device)
     

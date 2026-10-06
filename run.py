@@ -159,9 +159,32 @@ def main(args):
     print(f"2D clouds: {len(clouds_2d)}")
     print(f"3D clouds: {len(clouds_3d)}\n")
 
-    # Check if 2D clouds exist
-    if clouds_2d:
-        print("[⚠] 2D support is not yet implemented. Skipping 2D point clouds.\n")
+    for file in clouds_2d:
+
+        print("\n" + "=" * 60)
+        print(f"[2D] {file}")
+
+        dim = 2
+
+        config_file = get_config_file(dim)
+
+        point_path = os.path.splitext(file)[0]
+
+        update_config(
+            config_file,
+            point_path,
+            0.001,
+            args.batch_size,
+            dim
+        )
+
+        success = train(dim)
+
+        if success:
+            print("[✓] Training completed")
+
+        else:
+            print("[✗] Training failed")
 
     # Process 3D only
     for file in clouds_3d:
