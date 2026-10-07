@@ -305,7 +305,7 @@ class Trainer(BaseTrainer):
             self.opt_pf.zero_grad(set_to_none=True)
         
         # visualize intermediate meshes every 5 epochs using marching cubes
-        if epoch % 5 == 0 and epoch > 0 and step == 0:
+        if epoch % 5 == 0 and epoch > 0 and step % 500 == 0:
             mesh = imf2mesh(
                     lambda x: self.net_SDF(x), res=256, threshold=0., bound = 1.2, normalize = True, norm_type='res')
             if mesh is not None:
